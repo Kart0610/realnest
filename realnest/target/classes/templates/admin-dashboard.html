@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+
+    <!-- 🌙 Modern teal-dark theme styling -->
+    <style>
+        :root{
+          --bg-1:#081923;
+          --bg-2:#0f2b38;
+          --accent:#0f5b6b;
+          --accent-dark:#084e57;
+          --card-bg:#ffffff;
+          --muted:#97a7b2;
+          --danger:#c94a4a;
+        }
+
+        *{box-sizing:border-box}
+        html,body{
+          height:100%;
+          margin:0;
+          font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          background:linear-gradient(180deg,var(--bg-1) 0%, var(--bg-2) 100%);
+          color:#e9f2f5;
+        }
+
+        body > * {
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          min-height:100vh;
+          padding:32px 16px;
+        }
+
+        /* White content card */
+        body > *:first-child:not(.container-card) {
+          max-width:850px;
+          width:100%;
+          margin:0 auto;
+          background:var(--card-bg);
+          border-radius:12px;
+          padding:34px 36px;
+          box-shadow: 0 10px 30px rgba(3,15,22,0.55);
+          color: #16333a;
+          border: 1px solid rgba(10,30,36,0.06);
+        }
+
+        h1 {
+          text-align:center;
+          color:var(--accent);
+          font-size:28px;
+          margin:0 0 18px;
+        }
+
+        h2 {
+          color:#0b3b45;
+          font-size:18px;
+          margin:8px 0 14px;
+        }
+
+        #message { 
+          text-align:center;
+          margin-bottom:14px;
+          font-weight:600;
+          color:var(--accent-dark);
+        }
+
+        .back-home {
+          display:inline-block;
+          padding:10px 18px;
+          background-color:var(--accent);
+          color:white;
+          text-decoration:none;
+          border-radius:10px;
+          font-weight:700;
+          transition:background-color 0.3s, transform 0.1s;
+          margin-bottom:20px;
+          box-shadow: 0 6px 18px rgba(15,91,107,0.18);
+        }
+
+        .back-home:hover { background-color:var(--accent-dark); transform:translateY(-1px); }
+
+        .section { margin-bottom:40px; }
+
+        .user-card, .property-card {
+          background: linear-gradient(180deg, #fbfeff 0%, #f7fbfc 100%);
+          border-radius:10px;
+          padding:14px;
+          box-shadow: 0 6px 18px rgba(6,18,22,0.06);
+          border: 1px solid rgba(10,30,36,0.04);
+          color:#06333a;
+          margin-bottom:15px;
+        }
+
+        .user-card button,
+        .property-card button {
+          padding:8px 12px;
+          border-radius:8px;
+          border:0;
+          cursor:pointer;
+          font-weight:600;
+          margin-right:8px;
+          margin-top:8px;
+          background:var(--accent);
+          color:white;
+          box-shadow: 0 6px 14px rgba(15,91,107,0.12);
+        }
+
+        .user-card .delete-btn,
+        .property-card .delete-btn {
+          background:var(--danger);
+          box-shadow:0 6px 14px rgba(201,74,74,0.12);
+        }
+
+        .property-card img {
+          width:100%;
+          max-height:200px;
+          object-fit:cover;
+          border-radius:8px;
+          margin-bottom:10px;
+          border:1px solid rgba(0,0,0,0.04);
+        }
+
+        .property-grid {
+          display:grid;
+          grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+          gap:18px;
+        }
+
+        @media (max-width:640px){
+          body > *:first-child:not(.container-card) {
+            padding:22px;
+            border-radius:10px;
+            margin:16px;
+          }
+          h1 { font-size:22px; }
+          .property-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <h1>Admin Dashboard</h1>
+
+        <!-- ✅ Back to Home Button -->
+        <div style="text-align: center; margin-bottom: 20px;">
+            <a href="/webpages/" class="back-home">Back to Home</a>
+        </div>
+
+        <div id="message"></div>
+
+        <div class="section">
+            <h2>Users Details :</h2>
+            <div id="user-list">Loading users...</div>
+        </div>
+
+        <div class="section">
+            <h2>Pending Properties : </h2>
+            <div id="pending-properties" class="property-grid">Loading properties...</div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if(!token) window.location.href = '/webpages/login';
+
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const role = payload.role || payload.roles || "";
+
+        if (!role.includes("ADMIN")) {
+            alert("Access denied! Admins only.");
+            window.location.href = '/webpages/login';
+        }
+
+        function showMessage(text, color = "green") {
+            const msg = document.getElementById("message");
+            msg.innerHTML = `<p style="color:${color};">${text}</p>`;
+            setTimeout(() => msg.innerHTML = "", 3000);
+        }
+
+        async function loadUsers() {
+            try {
+                const res = await fetch('/api/admin/users', {
+                    headers: {'Authorization': 'Bearer ' + token}
+                });
+                const users = await res.json();
+                const container = document.getElementById('user-list');
+
+                container.innerHTML = users.map(u => `
+                    <div class="user-card">
+                        <p><strong>${u.name}</strong> (${u.email})</p>
+                        <p>Role: ${u.role}</p>
+                        <button class="edit-btn" onclick="editUser(${u.id})">Edit</button>
+                        <button class="delete-btn" onclick="deleteUser(${u.id})">Delete</button>
+                    </div>
+                `).join('');
+            } catch (e) {
+                showMessage("Failed to load users", "red");
+            }
+        }
+
+        async function editUser(id) {
+            try {
+                const res = await fetch('/api/admin/users', {
+                    headers: {'Authorization': 'Bearer ' + token}
+                });
+                const users = await res.json();
+                const user = users.find(u => u.id === id);
+                if (!user) return showMessage("User not found", "red");
+
+                const newName = prompt("Enter new name:", user.name);
+                const newRole = prompt("Enter new role (ROLE_ADMIN / ROLE_CUSTOMER):", user.role);
+                if (!newName || !newRole) return;
+
+                const updatedUser = { ...user, name: newName, role: newRole };
+
+                const updateRes = await fetch(`/api/admin/update/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(updatedUser)
+                });
+
+                if (updateRes.ok) {
+                    showMessage("User updated successfully");
+                    loadUsers();
+                } else {
+                    showMessage("Failed to update user", "red");
+                }
+            } catch (e) {
+                showMessage("Error updating user", "red");
+            }
+        }
+
+        async function deleteUser(id) {
+            if(!confirm("Delete this user?")) return;
+            try {
+                const res = await fetch(`/api/admin/delete/${id}`, {
+                    method: 'DELETE',
+                    headers: {'Authorization': 'Bearer ' + token}
+                });
+
+                if (res.ok) {
+                    showMessage("User deleted successfully");
+                    loadUsers();
+                } else {
+                    showMessage("Failed to delete user", "red");
+                }
+            } catch (e) {
+                showMessage("Error deleting user", "red");
+            }
+        }
+
+        async function loadPendingProperties() {
+            try {
+                const res = await fetch('/api/properties', {headers: {'Authorization': 'Bearer ' + token}});
+                const properties = await res.json();
+                const pending = properties.filter(p => !p.approved);
+                const container = document.getElementById('pending-properties');
+
+                container.innerHTML = pending.map(p => `
+                    <div class="property-card">
+                        <img src="${p.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${p.title}">
+                        <h3>${p.title}</h3>
+                        <p>${p.description}</p>
+                        <p><strong>Owner:</strong> ${p.owner.name} (${p.owner.email})</p>
+                        <button onclick="approveProperty(${p.id})">Approve</button>
+                        <button class="delete-btn" onclick="deleteProperty(${p.id}, '${p.owner.email}')">Delete</button>
+                    </div>
+                `).join('');
+            } catch (e) {
+                showMessage("Failed to load properties", "red");
+            }
+        }
+
+        async function approveProperty(id) {
+            try {
+                const res = await fetch(`/api/properties/approve/${id}`, {
+                    method: 'PUT',
+                    headers: {'Authorization': 'Bearer ' + token}
+                });
+                if (res.ok) {
+                    showMessage("Property approved");
+                    loadPendingProperties();
+                } else {
+                    showMessage("Failed to approve property", "red");
+                }
+            } catch (e) {
+                showMessage("Error approving property", "red");
+            }
+        }
+
+        async function deleteProperty(id, email) {
+            if(!confirm("Delete this property?")) return;
+            try {
+                const res = await fetch(`/api/properties/delete/${id}?email=${email}`, {
+                    method: 'DELETE',
+                    headers: {'Authorization': 'Bearer ' + token}
+                });
+                if (res.ok) {
+                    showMessage("Property deleted successfully");
+                    loadPendingProperties();
+                } else {
+                    showMessage("Failed to delete property", "red");
+                }
+            } catch (e) {
+                showMessage("Error deleting property", "red");
+            }
+        }
+
+        loadUsers();
+        loadPendingProperties();
+    </script>
+</body>
+</html>

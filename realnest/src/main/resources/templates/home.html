@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Home page - Real Estate Website</title>
+    <style>
+        :root{
+            --bg-1:#081923;      /* deep navy */
+            --bg-2:#0f2b38;      /* teal-blue gradient */
+            --accent:#0f5b6b;    /* main teal */
+            --accent-dark:#084e57;
+            --card-bg:#ffffff;   /* white panel */
+            --muted:#97a7b2;
+            --link:#1976d2;
+            --shadow: rgba(3,15,22,0.55);
+            --danger:#c94a4a;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+            color: #e9f2f5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Centered white card wrapper so page matches screenshot */
+        .page-card {
+            max-width: 1100px;
+            margin: 48px auto;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 28px 30px;
+            box-shadow: 0 10px 30px var(--shadow);
+            color: #16333a;
+            border: 1px solid rgba(10,30,36,0.06);
+        }
+
+        /* Header */
+        header {
+            background: transparent; /* keep header inside white card */
+            padding: 8px 0 18px;
+            margin-bottom: 6px;
+        }
+
+        header h1 {
+            margin: 0;
+            text-align: center;
+            color: var(--accent);
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            margin-top: 10px;
+        }
+
+        nav a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        nav a:hover { text-decoration: underline; }
+
+        h2 {
+            text-align: center;
+            color: #0b3b45;
+            margin: 18px 0;
+            font-size: 20px;
+        }
+
+        /* Search bar - match card look */
+        .search-bar {
+            display:flex;
+            justify-content:center;
+            flex-wrap:wrap;
+            gap:10px;
+            margin: 18px auto 28px;
+            max-width: 920px;
+        }
+
+        .search-bar input,
+        .search-bar select,
+        .search-bar button {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border:1px solid rgba(12,40,48,0.08);
+            background: #fbfdff;
+            color: #0b3b45;
+            font-size: 0.95rem;
+            outline: none;
+            box-shadow: 0 4px 12px rgba(6,18,22,0.03);
+        }
+
+        .search-bar input:focus,
+        .search-bar select:focus,
+        .search-bar button:focus {
+            border-color: var(--accent);
+            box-shadow: 0 8px 20px rgba(15,91,107,0.06);
+            transform: translateY(-1px);
+        }
+
+        .search-bar button {
+            background: linear-gradient(180deg,var(--accent) 0%, var(--accent-dark) 100%);
+            color: #fff;
+            border: 0;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(8,46,52,0.12);
+        }
+
+        .search-bar button:hover { opacity: 0.95; }
+
+        /* Property Grid */
+        .property-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 0 12px 36px;
+        }
+
+        .property-card {
+            background: linear-gradient(180deg,#fbfeff 0%, #f7fbfc 100%);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 6px 18px rgba(6,18,22,0.06);
+            transition: transform 0.25s, box-shadow 0.25s;
+            border:1px solid rgba(10,30,36,0.04);
+        }
+
+        .property-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(6,18,22,0.09);
+        }
+
+        .property-card img {
+            width:100%;
+            height:180px;
+            object-fit:cover;
+            display:block;
+            border-bottom:1px solid rgba(0,0,0,0.04);
+        }
+
+        .property-card .details {
+            padding:14px 16px;
+            color:#16333a;
+        }
+
+        .property-card h3 {
+            margin: 0 0 8px;
+            font-size: 1.15rem;
+            color:#0b3b45;
+        }
+
+        .property-card p {
+            margin: 6px 0;
+            color:#16333a;
+            font-size: 0.95rem;
+        }
+
+        .property-card a {
+            display:inline-block;
+            margin-top:10px;
+            color: white;
+            background: linear-gradient(180deg,var(--accent) 0%, var(--accent-dark) 100%);
+            padding:8px 12px;
+            border-radius:8px;
+            text-decoration:none;
+            font-weight:700;
+            box-shadow: 0 6px 18px rgba(15,91,107,0.12);
+        }
+
+        .property-card a:hover { opacity:0.95; }
+
+        /* small utility text when no results */
+        #property-list p {
+            text-align:center;
+            color:#0b3b45;
+            font-weight:600;
+            padding:24px;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .page-card { margin: 28px 12px; padding: 22px; }
+            .search-bar { max-width: 100%; gap:8px; }
+        }
+
+        @media (max-width: 600px) {
+            .property-grid { grid-template-columns: 1fr; padding: 0 6px 24px; }
+        }
+    </style>
+</head>
+<body>
+<div class="page-card">
+    <header>
+        <h1>Welcome to Real Estate Platform</h1>
+        <nav>
+            <a href="/webpages/login">Login</a>
+            <a href="/webpages/register">Register</a>
+        </nav>
+    </header>
+
+    <h2>Find Your Dream Property</h2>
+
+    <div class="search-bar">
+        <input type="text" id="location" placeholder="Location">
+        <select id="type">
+            <option value="">Any Type</option>
+            <option value="RENT">Rent</option>
+            <option value="SALE">Sale</option>
+        </select>
+        <input type="number" id="minPrice" placeholder="Min Price">
+        <input type="number" id="maxPrice" placeholder="Max Price">
+        <input type="text" id="keyword" placeholder="Keyword (e.g. villa, sea view)">
+        <button onclick="searchProperties()">Search</button>
+        <button onclick="loadProperties()" style="background:#f3f6f8;color:#0b3b45;border:1px solid rgba(12,40,48,0.06);box-shadow:none;">Reset</button>
+    </div>
+
+    <h2>Available Properties</h2>
+    <div id="property-list" class="property-grid">Loading properties...</div>
+</div>
+
+<script>
+    async function loadProperties() {
+        try {
+            const res = await fetch('/api/properties/approved');
+            if (!res.ok) throw new Error('Failed to fetch properties');
+            const properties = await res.json();
+            displayProperties(properties);
+        } catch (error) {
+            document.getElementById('property-list').innerHTML = `<p>Error: ${error.message}</p>`;
+        }
+    }
+
+    async function searchProperties() {
+        const location = document.getElementById('location').value;
+        const type = document.getElementById('type').value;
+        const minPrice = document.getElementById('minPrice').value;
+        const maxPrice = document.getElementById('maxPrice').value;
+        const keyword = document.getElementById('keyword').value;
+
+        const query = new URLSearchParams({ location, type, minPrice, maxPrice, keyword });
+        try {
+            const res = await fetch(`/api/properties/search?${query.toString()}`);
+            if (!res.ok) throw new Error('Search failed');
+            const properties = await res.json();
+            displayProperties(properties);
+        } catch (error) {
+            document.getElementById('property-list').innerHTML = `<p>Error: ${error.message}</p>`;
+        }
+    }
+
+    function displayProperties(properties) {
+        const container = document.getElementById('property-list');
+        if (!properties || properties.length === 0) {
+            container.innerHTML = '<p>No matching properties found.</p>';
+            return;
+        }
+
+        container.innerHTML = properties.map(p => `
+            <div class="property-card">
+                <img src="${p.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${p.title}">
+                <div class="details">
+                    <h3>${p.title}</h3>
+                    <p>${p.description}</p>
+                    <p><strong>Price:</strong> ₹${p.price}</p>
+                    <p><strong>Type:</strong> ${p.type}</p>
+                    <p><strong>Location:</strong> ${p.location}</p>
+                    <a href="/webpages/properties/${p.id}">View Details</a>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    loadProperties();
+</script>
+</body>
+</html>
