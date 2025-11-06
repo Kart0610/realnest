@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Property Details</title>
+    <style>
+        :root {
+            --bg-1:#081923;      /* deep navy background */
+            --bg-2:#0f2b38;      /* dark teal gradient */
+            --accent:#0f5b6b;    /* main teal color */
+            --accent-dark:#084e57;
+            --card-bg:#ffffff;
+            --text-dark:#16333a;
+            --muted:#97a7b2;
+            --danger:#c94a4a;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+            color: #e9f2f5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--accent);
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        /* Back Button */
+        .back-home {
+            display: inline-block;
+            padding: 10px 18px;
+            background-color: var(--accent);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 700;
+            margin: 10px auto 25px;
+            box-shadow: 0 6px 18px rgba(15,91,107,0.18);
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        .back-home:hover {
+            background-color: var(--accent-dark);
+            transform: translateY(-1px);
+        }
+
+        /* Property Card */
+        .property-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px 28px;
+            max-width: 480px;
+            width: 100%;
+            margin: 20px auto;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(3,15,22,0.55);
+            border: 1px solid rgba(10,30,36,0.06);
+            color: var(--text-dark);
+        }
+
+        .property-card img {
+            width: 100%;
+            max-height: 260px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .property-card h2 {
+            margin: 10px 0;
+            color: var(--accent-dark);
+            font-size: 22px;
+        }
+
+        .property-card p {
+            margin: 6px 0;
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+
+        .property-card strong {
+            color: var(--accent-dark);
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 20px; }
+            .property-card { padding: 18px; border-radius: 10px; }
+            h1 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Property Details</h1>
+
+    <!-- Back to Home Button -->
+    <div style="text-align:center;">
+        <a href="/webpages/home" class="back-home">Back to Home</a>
+    </div>
+
+    <div id="property-detail" class="property-card">Loading...</div>
+
+    <script>
+        const path = window.location.pathname;
+        const id = path.split('/').pop();
+
+        async function loadProperty() {
+            try {
+                const res = await fetch('/api/properties');
+                const properties = await res.json();
+                const property = properties.find(p => p.id == id);
+                const container = document.getElementById('property-detail');
+
+                if(property){
+                    container.innerHTML = `
+                        <img src="${property.imageUrl || 'https://via.placeholder.com/400x250?text=No+Image'}" alt="${property.title}">
+                        <h2>${property.title}</h2>
+                        <p>${property.description}</p>
+                        <p><strong>Price:</strong> ₹${property.price}</p>
+                        <p><strong>Type:</strong> ${property.type}</p>
+                        <p><strong>Location:</strong> ${property.location}</p>
+                        <p><strong>Owner:</strong> ${property.owner.name} (${property.owner.email})</p>
+                    `;
+                } else {
+                    container.innerHTML = '<p>Property not found</p>';
+                }
+            } catch (error) {
+                document.getElementById('property-detail').innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+
+        loadProperty();
+    </script>
+</body>
+</html>

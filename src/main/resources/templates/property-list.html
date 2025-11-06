@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Property List</title>
+  <style>
+    :root{
+      --bg-1:#081923;      /* deep navy */
+      --bg-2:#0f2b38;      /* teal-blue */
+      --accent:#0f5b6b;    /* teal accent */
+      --accent-dark:#084e57;
+      --card-bg:#ffffff;   /* white panel */
+      --muted:#97a7b2;
+      --cta:#1976d2;
+      --danger:#c94a4a;
+      --shadow: rgba(3,15,22,0.55);
+    }
+
+    *{ box-sizing: border-box; }
+
+    html,body{
+      height:100%;
+      margin:0;
+      font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(180deg,var(--bg-1) 0%, var(--bg-2) 100%);
+      color: #e9f2f5;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* center white page card */
+    .page-card {
+      max-width: 1100px;
+      margin: 48px auto;
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 28px 30px;
+      box-shadow: 0 10px 30px var(--shadow);
+      color: #16333a;
+      border: 1px solid rgba(10,30,36,0.06);
+    }
+
+    h1{
+      text-align:center;
+      margin:0 0 18px;
+      color: var(--accent);
+      font-size: 28px;
+      font-weight:700;
+    }
+
+    /* Search bar */
+    .search-bar{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:10px;
+      margin-bottom:20px;
+    }
+
+    .search-bar input, .search-bar select, .search-bar button{
+      padding:10px 12px;
+      border-radius:8px;
+      border:1px solid rgba(12,40,48,0.08);
+      background: #fbfdff;
+      color:#0b3b45;
+      font-size:0.95rem;
+      outline:none;
+      box-shadow:0 6px 16px rgba(6,18,22,0.03);
+    }
+
+    .search-bar input:focus, .search-bar select:focus, .search-bar button:focus{
+      border-color:var(--accent);
+      box-shadow:0 10px 28px rgba(15,91,107,0.06);
+      transform: translateY(-1px);
+    }
+
+    .search-bar button{
+      background: linear-gradient(180deg,var(--accent) 0%, var(--accent-dark) 100%);
+      color:#fff;
+      border:0;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:0 10px 30px rgba(8,46,52,0.12);
+    }
+
+    .search-bar #btnClear{
+      background: #f3f6f8;
+      color: #0b3b45;
+      border:1px solid rgba(12,40,48,0.06);
+      box-shadow:none;
+    }
+
+    /* grid and cards */
+    .property-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap:20px;
+      padding: 0 8px 28px;
+    }
+
+    .property-card{
+      background: linear-gradient(180deg,#fbfeff 0%, #f7fbfc 100%);
+      border-radius:10px;
+      padding:14px;
+      box-shadow:0 6px 18px rgba(6,18,22,0.06);
+      transition: transform 0.25s, box-shadow 0.25s;
+      border:1px solid rgba(10,30,36,0.04);
+      color:#16333a;
+    }
+
+    .property-card:hover{
+      transform: translateY(-6px);
+      box-shadow:0 12px 30px rgba(6,18,22,0.09);
+    }
+
+    .property-card h3{
+      margin:8px 0 6px;
+      color:#0b3b45;
+      font-size:1.1rem;
+    }
+
+    .property-card p{
+      margin:6px 0;
+      color:#16333a;
+      line-height:1.4;
+      font-size:0.95rem;
+    }
+
+    .property-card img{
+      width:100%;
+      height:200px;
+      object-fit:cover;
+      border-radius:8px;
+      margin-bottom:10px;
+      border:1px solid rgba(0,0,0,0.04);
+      display:block;
+    }
+
+    /* action buttons */
+    .property-card a, .property-card button{
+      display:inline-block;
+      margin-top:10px;
+      margin-right:8px;
+      padding:8px 12px;
+      border-radius:8px;
+      text-decoration:none;
+      font-weight:700;
+      cursor:pointer;
+      border:0;
+      color:#fff;
+      box-shadow:0 6px 18px rgba(15,91,107,0.08);
+    }
+
+    .property-card a{
+      background: linear-gradient(180deg,var(--accent) 0%, var(--accent-dark) 100%);
+    }
+
+    .property-card button{
+      background: var(--danger);
+    }
+
+    .property-card a:hover, .property-card button:hover{
+      opacity:0.95;
+    }
+
+    /* small states */
+    #list p { text-align:center; color:#0b3b45; font-weight:600; padding:18px 0; }
+
+    /* responsive */
+    @media (max-width:900px){
+      .page-card { margin:28px 12px; padding:22px; }
+    }
+    @media (max-width:600px){
+      .property-grid { grid-template-columns: 1fr; padding:0 6px 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-card">
+    <h1>Properties</h1>
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+      <input id="qKeyword" placeholder="Keyword">
+      <input id="qLocation" placeholder="Location">
+      <input id="qMinPrice" placeholder="Min price" type="number">
+      <input id="qMaxPrice" placeholder="Max price" type="number">
+      <select id="qType">
+        <option value="">All</option>
+        <option value="SALE">SALE</option>
+        <option value="RENT">RENT</option>
+      </select>
+      <button id="btnSearch">Search</button>
+      <button id="btnClear">Clear</button>
+    </div>
+
+    <!-- Property Grid -->
+    <div id="list" class="property-grid"></div>
+  </div>
+
+  <script>
+    function parseJwt(token) {
+      try {
+        const base = token.split('.')[1];
+        return JSON.parse(decodeURIComponent(atob(base).split('').map(c =>
+          '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+      } catch (e) { return null; }
+    }
+
+    const token = localStorage.getItem('token');
+    const jwt = token ? parseJwt(token) : null;
+    const currentEmail = jwt?.sub;
+    const currentRole = jwt?.role || null;
+
+    async function loadApproved() {
+      try {
+        const res = await fetch('/api/properties/approved');
+        if (!res.ok) {
+          document.getElementById('list').innerText = 'Failed to load properties';
+          return;
+        }
+        const props = await res.json();
+        render(props);
+      } catch (err) {
+        console.error(err);
+        document.getElementById('list').innerText = 'Error loading properties';
+      }
+    }
+
+    function render(props) {
+      const container = document.getElementById('list');
+      if (!props.length) {
+        container.innerHTML = '<p>No properties found.</p>';
+        return;
+      }
+      container.innerHTML = props.map(p => `
+        <div class="property-card">
+          <img src="${p.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${p.title}">
+          <h3>${p.title}</h3>
+          <p>${p.description || ''}</p>
+          <p>Type: ${p.type} | Price: ₹${p.price} | Location: ${p.location}</p>
+          <a href="/webpages/properties/${p.id}">Details</a>
+          ${showOwnerActions(p)}
+        </div>
+      `).join('');
+    }
+
+    function showOwnerActions(p) {
+      if (!currentEmail) return '';
+      const isOwner = p.owner && p.owner.email === currentEmail;
+      const isAdmin = currentRole === 'ROLE_ADMIN' || currentRole === 'ADMIN';
+      if (isOwner || isAdmin) {
+        return ` <button onclick="goEdit(${p.id})">Edit</button>
+                 <button onclick="doDelete(${p.id})">Delete</button>`;
+      }
+      return '';
+    }
+
+    function goEdit(id) {
+      window.location.href = `/webpages/properties/edit/${id}`;
+    }
+
+    async function doDelete(id) {
+      if (!confirm('Delete this property?')) return;
+      if (!currentEmail) return alert('Not authenticated');
+      try {
+        const res = await fetch(`/api/properties/delete/${id}?email=${encodeURIComponent(currentEmail)}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) {
+          alert('Deleted');
+          loadApproved();
+        } else {
+          const text = await res.text();
+          alert('Delete failed: ' + text);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    document.getElementById('btnSearch').addEventListener('click', async () => {
+      const kw = document.getElementById('qKeyword').value;
+      const loc = document.getElementById('qLocation').value;
+      const min = document.getElementById('qMinPrice').value;
+      const max = document.getElementById('qMaxPrice').value;
+      const type = document.getElementById('qType').value;
+
+      const params = new URLSearchParams();
+      if (loc) params.append('location', loc);
+      if (type) params.append('type', type);
+      if (min) params.append('minPrice', min);
+      if (max) params.append('maxPrice', max);
+      if (kw) params.append('keyword', kw);
+
+      const url = '/api/properties/search?' + params.toString();
+      try {
+        const res = await fetch(url);
+        if (!res.ok) {
+          document.getElementById('list').innerText = 'Search failed';
+          return;
+        }
+        const props = await res.json();
+        render(props);
+      } catch (err) {
+        console.error(err);
+      }
+    });
+
+    document.getElementById('btnClear').addEventListener('click', () => {
+      document.getElementById('qKeyword').value = '';
+      document.getElementById('qLocation').value = '';
+      document.getElementById('qMinPrice').value = '';
+      document.getElementById('qMaxPrice').value = '';
+      document.getElementById('qType').value = '';
+      loadApproved();
+    });
+
+    loadApproved();
+  </script>
+</body>
+</html>

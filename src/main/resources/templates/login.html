@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <style>
+        :root {
+            --bg-1: #081923;       /* deep navy background */
+            --bg-2: #0f2b38;       /* dark teal gradient */
+            --accent: #0f5b6b;     /* main teal color */
+            --accent-dark: #084e57;
+            --card-bg: #ffffff;
+            --text-dark: #16333a;
+            --muted: #97a7b2;
+            --shadow: rgba(3,15,22,0.55);
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+            color: #e9f2f5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 40px 20px;
+        }
+
+        /* White card for login form */
+        form {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 28px 26px;
+            width: 320px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px var(--shadow);
+            border: 1px solid rgba(10,30,36,0.06);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            color: var(--text-dark);
+        }
+
+        /* 🌟 Login title styling for better visibility */
+        h1 {
+            color: #1ec6d1; /* bright teal */
+            margin: 0 0 8px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: 800;
+            text-shadow: 0 0 10px rgba(30,198,209,0.3);
+        }
+
+        /* 🌟 Bottom text made visible and readable */
+        h3 {
+            text-align: center;
+            margin-top: 18px;
+            color: #b9d9e1; /* soft light teal-blue */
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        a {
+            color: #3ecfff; /* brighter cyan link color */
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        a:hover {
+            color: #6de3ff;
+            text-decoration: underline;
+        }
+
+        label {
+            font-weight: 700;
+            color: #0b3b45;
+            font-size: 0.95rem;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(12,40,48,0.08);
+            width: 100%;
+            background: #fbfdff;
+            color: #0b3b45;
+            font-size: 0.95rem;
+            outline: none;
+            box-shadow: 0 6px 18px rgba(6,18,22,0.03);
+            transition: box-shadow .12s, border-color .12s, transform .06s;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 10px 28px rgba(15,91,107,0.06);
+            transform: translateY(-1px);
+        }
+
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(180deg, #0d5c63 0%, #083e44 100%);
+            color: white;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform .08s, opacity .12s;
+            box-shadow: 0 10px 30px rgba(8,46,52,0.12);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            opacity: 0.98;
+        }
+
+        @media (max-width: 420px) {
+            form { width: 92%; padding: 20px; border-radius: 10px; }
+            h1 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Login</h1>
+    <form id="login-form">
+        <label for="email">Email:</label>
+        <input type="email" id="email" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" required>
+
+        <button type="submit">Login</button>
+    </form>
+
+    <h3>Do not have an account? <a href="/webpages/register">Register</a></h3>
+
+    <script>
+        const form = document.getElementById('login-form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            };
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            if(res.ok) {
+                const token = await res.text();
+                localStorage.setItem('token', token);
+
+                // Decode role from token
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                if(payload.role === 'ROLE_ADMIN') {
+                    window.location.href = '/webpages/admin/dashboard';
+                } else {
+                    window.location.href = '/webpages/dashboard';
+                }
+            } else {
+                const err = await res.text();
+                alert(err);
+            }
+        });
+    </script>
+</body>
+</html>

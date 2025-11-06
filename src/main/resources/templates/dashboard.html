@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Dashboard</title>
+
+    <style>
+        /* 🌙 Modern dark teal theme */
+        :root {
+            --bg-1: #081923;
+            --bg-2: #0f2b38;
+            --accent: #0f5b6b;
+            --accent-dark: #084e57;
+            --card-bg: #ffffff;
+            --muted: #97a7b2;
+            --danger: #c94a4a;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+            color: #e9f2f5;
+        }
+
+        /* Center content */
+        body {
+            padding: 40px 20px;
+        }
+
+        /* Main white container card */
+        .dashboard-container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 34px 36px;
+            box-shadow: 0 10px 30px rgba(3,15,22,0.55);
+            color: #16333a;
+            border: 1px solid rgba(10,30,36,0.06);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--accent);
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            color: #0b3b45;
+            font-size: 18px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        /* Buttons (Home and Add Property) */
+        .back-home {
+            display: inline-block;
+            margin: 10px auto 30px auto;
+            padding: 10px 20px;
+            background-color: var(--accent);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 700;
+            transition: background-color 0.3s, transform 0.1s;
+            box-shadow: 0 6px 18px rgba(15,91,107,0.18);
+        }
+
+        .back-home:hover {
+            background-color: var(--accent-dark);
+            transform: translateY(-1px);
+        }
+
+        /* Property grid and cards */
+        .property-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .property-card {
+            background: linear-gradient(180deg, #fbfeff 0%, #f7fbfc 100%);
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: 0 6px 18px rgba(6,18,22,0.06);
+            border: 1px solid rgba(10,30,36,0.04);
+            color: #06333a;
+            transition: transform 0.2s;
+        }
+
+        .property-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .property-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .property-card h3 {
+            margin: 10px 0 5px;
+            color: #0b3b45;
+        }
+
+        .property-card p {
+            margin: 5px 0;
+            color: #16333a;
+        }
+
+        /* Buttons inside property cards */
+        .property-card button,
+        .property-card a {
+            margin-right: 10px;
+            margin-top: 5px;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 6px 14px rgba(15,91,107,0.12);
+        }
+
+        .property-card button {
+            background-color: var(--danger);
+        }
+
+        .property-card a {
+            background-color: var(--accent);
+        }
+
+        .property-card button:hover {
+            opacity: 0.9;
+        }
+
+        @media (max-width:640px) {
+            .dashboard-container {
+                padding: 22px;
+                border-radius: 10px;
+            }
+            h1 { font-size: 22px; }
+            .property-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <h1>Customer Dashboard</h1>
+        
+        <!-- ✅ Back to Home Button -->
+        <div style="text-align: center;">
+            <a href="/webpages/" class="back-home">Back to Home</a>
+        </div>
+
+        <h2>Add Properties :</h2>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <a href="/webpages/properties/new" class="back-home">Click To Add Properties</a>
+        </div>
+
+        <h2>Properties Added By You :</h2>
+        <div class="property-grid" id="user-properties">Loading properties...</div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if(!token) window.location.href = '/webpages/login';
+
+        async function loadProperties() {
+            const email = JSON.parse(atob(token.split('.')[1])).sub;
+
+            const res = await fetch(`/api/properties/owner?email=${email}`, {
+                headers: {'Authorization': 'Bearer ' + token}
+            });
+            const properties = await res.json();
+            const container = document.getElementById('user-properties');
+
+            if(properties.length === 0) {
+                container.innerHTML = '<p>No properties added yet.</p>';
+                return;
+            }
+
+            container.innerHTML = properties.map(p => `
+                <div class="property-card">
+                    <img src="${p.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${p.title}">
+                    <h3>${p.title}</h3>
+                    <p>${p.description}</p>
+                    <p><strong>Price:</strong> ${p.price}</p>
+                    <p><strong>Type:</strong> ${p.type}</p>
+                    <p><strong>Location:</strong> ${p.location}</p>
+                    <button onclick="deleteProperty(${p.id}, '${email}')">Delete</button>
+                    <a href="/webpages/properties/edit/${p.id}">Edit</a>
+                </div>
+            `).join('');
+        }
+
+        async function deleteProperty(id, email) {
+            const confirmed = confirm('Are you sure?');
+            if(!confirmed) return;
+
+            await fetch(`/api/properties/delete/${id}?email=${email}`, {
+                method: 'DELETE',
+                headers: {'Authorization': 'Bearer ' + token}
+            });
+            loadProperties();
+        }
+
+        loadProperties();
+    </script>
+</body>
+</html>
