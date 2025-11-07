@@ -1,3 +1,4 @@
+// src/main/java/com/example/realnest/config/SecurityConfig.java
 package com.example.realnest.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,29 +28,45 @@ public class SecurityConfig {
 
         http.csrf().disable()
             .authorizeHttpRequests()
+            
+            // Public Thymeleaf pages
+           .requestMatchers(
+                          "/", 
+                          "/login", 
+                          "/register", 
+                          "/properties/**", // API and pages
+                          "/api/auth/**",
+                          "/api/properties/**",
+                          "/webpages/**",
+                          "/dashboard",
+                          "admin/dashboard",
+                          "/css/**", 
+                          "/js/**", 
+                          "/images/**",
+                           "/swagger-ui/**",
+                           "/v3/api-docs/**",
+                           "/swagger-ui.html",
+                           "/swagger-ui/index.html",
+                           "/swagger",
+                            "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/swagger-resources/**",
+                    "/webjars/**","/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html"
+                                                            
+                ).permitAll()
 
-            // Public: root, health, static resources, Swagger/OpenAPI and public APIs
-            .requestMatchers(
-                    "/", "/index.html", "/health",
-                    "/css/**", "/js/**", "/images/**", "/favicon.ico",
-                    "/static/**", "/webjars/**",
-                    "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
-                    "/api/auth/**",
-                    "/api/properties/**",
-                    "/properties/**",
-                    "/login", "/register", "/swagger", "/swagger-ui/index.html"
-            ).permitAll()
-
-            // Admin pages and APIs
+            
+            // Admin pages
             .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
-
+            
             // Customer pages
             .requestMatchers("/dashboard/**").hasAnyRole("CUSTOMER", "ADMIN")
             .requestMatchers("/admin-dashboard").hasRole("ADMIN")
-
-            // Any other request requires authentication
+            
+            // All other requests require authentication
             .anyRequest().authenticated()
-
+            
             .and()
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
