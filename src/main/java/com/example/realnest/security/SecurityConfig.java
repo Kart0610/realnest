@@ -27,45 +27,29 @@ public class SecurityConfig {
 
         http.csrf().disable()
             .authorizeHttpRequests()
-            
-            // Public Thymeleaf pages
-           .requestMatchers(
-                          "/", 
-                          "/login", 
-                          "/register", 
-                          "/properties/**", // API and pages
-                          "/api/auth/**",
-                          "/api/properties/**",
-                          "/webpages/**",
-                          "/dashboard",
-                          "admin/dashboard",
-                          "/css/**", 
-                          "/js/**", 
-                          "/images/**",
-                           "/swagger-ui/**",
-                           "/v3/api-docs/**",
-                           "/swagger-ui.html",
-                           "/swagger-ui/index.html",
-                           "/swagger",
-                            "/v3/api-docs/**",
-                    "/swagger-ui/**",
-                    "/swagger-ui.html",
-                    "/swagger-resources/**",
-                    "/webjars/**","/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html"
-                                                            
-                ).permitAll()
 
-            
-            // Admin pages
+            // Public: root, health, static resources, Swagger/OpenAPI and public APIs
+            .requestMatchers(
+                    "/", "/index.html", "/health",
+                    "/css/**", "/js/**", "/images/**", "/favicon.ico",
+                    "/static/**", "/webjars/**",
+                    "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
+                    "/api/auth/**",
+                    "/api/properties/**",
+                    "/properties/**",
+                    "/login", "/register", "/swagger", "/swagger-ui/index.html"
+            ).permitAll()
+
+            // Admin pages and APIs
             .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
-            
+
             // Customer pages
             .requestMatchers("/dashboard/**").hasAnyRole("CUSTOMER", "ADMIN")
             .requestMatchers("/admin-dashboard").hasRole("ADMIN")
-            
-            // All other requests require authentication
+
+            // Any other request requires authentication
             .anyRequest().authenticated()
-            
+
             .and()
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
